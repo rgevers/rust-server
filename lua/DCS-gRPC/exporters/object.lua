@@ -76,7 +76,7 @@ end
 
 GRPC.exporters.weapon = function(weapon)
   return {
-    id = tonumber(weapon:getName()),
+    id = weapon.id_, --tonumber(weapon:getName()), -- Found on the overlordbot discord.
     type = weapon:getTypeName(),
     rawTransform = GRPC.exporters.rawTransform(weapon),
   }
