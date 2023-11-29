@@ -5,6 +5,8 @@
 -- be kept in sync
 --
 
+-- Patched by Arch 11/7/2023 to work around nil group on dead object bug. https://forum.dcs.world/topic/314933-121622-patch-bug-dead-event-no-longer-includes-units-group-mission-breaking-issue/
+
 GRPC.exporters.position = function(pos)
   local lat, lon, alt = coord.LOtoLL(pos)
   return {
@@ -17,8 +19,13 @@ GRPC.exporters.position = function(pos)
 end
 
 GRPC.exporters.unit = function(unit)
+  local idNum = 0
+  if(unit:getID() ~= nil) then
+    idNum = tonumber(unit:getID())
+  end
+
   return {
-    id = tonumber(unit:getID()),
+    id = idNum,
     name = unit:getName(),
     callsign = unit:getCallsign(),
     coalition = unit:getCoalition() + 1, -- Increment for non zero-indexed gRPC enum
@@ -45,8 +52,22 @@ GRPC.exporters.rawTransform = function(object)
 end
 
 GRPC.exporters.group = function(group)
+  if(group == nil) then
+    return {
+      id = 0,
+      name = "unknown",
+      coalition = 1, -- Increment for non zero-indexed gRPC enum
+      category = 1, -- Increment for non zero-indexed gRPC enum
+    }
+  end
+  
+  local idNum = 0
+  if(group:getID() ~= nil) then
+    idNum = tonumber(group:getID())
+  end
+
   return {
-    id = tonumber(group:getID()),
+    id = idNum,
     name = group:getName(),
     coalition = group:getCoalition() + 1, -- Increment for non zero-indexed gRPC enum
     category = group:getCategory() + 1, -- Increment for non zero-indexed gRPC enum
@@ -62,8 +83,13 @@ GRPC.exporters.weapon = function(weapon)
 end
 
 GRPC.exporters.static = function(static)
+  local idNum = 0
+  if(static:getID() ~= nil) then
+    idNum = tonumber(static:getID())
+  end
+
   return {
-    id = tonumber(static:getID()),
+    id = idNum,
     type = static:getTypeName(),
     name = static:getName(),
     coalition = static:getCoalition() + 1, -- Increment for non zero-indexed gRPC enum
@@ -90,8 +116,13 @@ GRPC.exporters.airbase = function(airbase)
 end
 
 GRPC.exporters.scenery = function(scenery)
+  local idNum = 0
+  if(scenery:getName() ~= nil) then
+    idNum = tonumber(scenery:getName())
+  end
+
   return {
-    id = tonumber(scenery:getName()),
+    id = idNum,
     type = scenery:getTypeName(),
     position = GRPC.exporters.position(scenery:getPoint()),
   }
